@@ -304,6 +304,7 @@ canvas.addEventListener('keydown',e=>{
 new GLTFLoader().load('Caymas_26HB_Tohatsu_Garmin.glb?v=53.3',g=>{
   model=g.scene;model.traverse(o=>{
     const index=g.parser.associations.get(o)?.nodes;if(index!==undefined)o.userData.sourceName=g.parser.json.nodes[index].name;
+    if(/^Stern \| (port compartment|starboard livewell) blue basin$/.test(source(o)))o.visible=false;
     if(o.isMesh){
       const materials=Array.isArray(o.material)?o.material:[o.material];
       o.castShadow=materials.every(m=>!m.transparent);o.receiveShadow=true;
