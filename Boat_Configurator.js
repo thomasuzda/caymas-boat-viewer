@@ -1,10 +1,10 @@
 import {createGarminOptions,GARMIN_CHOICES} from './Garmin_Options.js?v=55.1';
-import {createFleetBoat,BOAT_CHOICES} from './Boat_Fleet.js?v=68';
+import {createFleetBoat,BOAT_CHOICES} from './Boat_Fleet.js?v=69';
 import {enhanceConsoleFinish} from './Console_Finish.js?v=51';
 import {enhanceEngineFinish} from './Engine_Finish.js?v=68';
 import {createTrollingMotor} from './Boat_Trolling_Motor.js?v=54.3';
 import {createPowerPoles} from './Boat_Power_Poles.js?v=25';
-import {createEngineOptions,createTrollingOptions,ENGINE_CHOICES,TROLLING_CHOICES,engineChoicesForBoat} from './Motor_Options.js?v=68';
+import {createEngineOptions,createTrollingOptions,ENGINE_CHOICES,TROLLING_CHOICES,engineChoicesForBoat} from './Motor_Options.js?v=69';
 import * as THREE from 'three';
 import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
