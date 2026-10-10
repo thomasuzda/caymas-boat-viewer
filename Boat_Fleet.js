@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
 import {createGarminOptions} from './Garmin_Options.js?v=55.1';
-import {createEngineOptions,createTrollingOptions,engineChoicesForBoat} from './Motor_Options.js?v=56.1';
+import {createEngineOptions,createTrollingOptions,engineChoicesForBoat} from './Motor_Options.js?v=68';
 import {createTrollingMotor} from './Boat_Trolling_Motor.js?v=54.3';
 
 export const BOAT_CHOICES=[

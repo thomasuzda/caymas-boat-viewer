@@ -36,17 +36,18 @@ function microfinish(kind){
  const t=new THREE.DataTexture(data,n,n);t.wrapS=t.wrapT=THREE.RepeatWrapping;t.repeat.set(5,5);t.generateMipmaps=true;t.minFilter=THREE.LinearMipmapLinearFilter;t.magFilter=THREE.LinearFilter;t.needsUpdate=true;return t;
 }
 export function enhanceEngineFinish(model,{horsepower=250,compact=false}={}){
- if(model.userData.engineFinishVersion===54)return;
+ if(model.userData.engineFinishVersion===68)return;
  const source=o=>o.userData.sourceName||o.name,paintGrain=microfinish('paint'),rubberGrain=microfinish('rubber'),steelGrain=microfinish('metal');
- const paint=new THREE.MeshPhysicalMaterial({name:'Tohatsu | glossy near-black factory clearcoat',color:'#111620',metalness:.04,roughness:.18,clearcoat:1,clearcoatRoughness:.105,roughnessMap:paintGrain,envMapIntensity:.95});
+ const paint=new THREE.MeshPhysicalMaterial({name:'Tohatsu | glossy near-black factory clearcoat',color:'#090e16',metalness:.04,roughness:.145,clearcoat:1,clearcoatRoughness:.085,roughnessMap:paintGrain,envMapIntensity:.95});
  const rubber=new THREE.MeshPhysicalMaterial({name:'BFT250 | molded rubber',color:'#101516',metalness:0,roughness:.79,bumpMap:rubberGrain,bumpScale:.00015,roughnessMap:rubberGrain});
  const steel=new THREE.MeshPhysicalMaterial({name:'Tohatsu | polished stainless',color:'#cbd2d6',metalness:1,roughness:.14,roughnessMap:steelGrain,anisotropy:0,envMapIntensity:.9});
  let cowling;const old=[];
  model.traverse(o=>{
   if(!o.isMesh)return;const name=source(o);if(!name.startsWith('Tohatsu |'))return;
   if(/sculpted black cowling|reference sculpted cowling/.test(name))cowling=o;
+  if(compact&&/molded side shoulder crease|upper cap panel join|polished painted intake lip/.test(name)){old.push(o);return;}
   if(/aft 250 badge|aft name|side emblem|side TOHATSU|side wing emblem|side printed brand|aft printed horsepower/.test(name)){old.push(o);return;}
-  if(/sculpted black cowling|reference sculpted cowling|formed four-cylinder exhaust housing|formed V6 lower cover pan|continuous cast gearcase neck|lower cowling pan|tapered exhaust leg|hydrodynamic gearcase|spray plate|spray rail|swept skeg|painted intake lip|forward inlet rib/.test(name))o.material=paint;
+  if(/sculpted black cowling|reference sculpted cowling|sculpted spray plate|tapered swept skeg|trim cylinder|formed compact exhaust housing|compact hydrodynamic gearcase|formed four-cylinder exhaust housing|formed V6 lower cover pan|continuous cast gearcase neck|lower cowling pan|tapered exhaust leg|hydrodynamic gearcase|spray plate|spray rail|swept skeg|painted intake lip|forward inlet rib/.test(name))o.material=paint;
   else if(/rubber|gasket|steering hose|cowling latch/.test(name))o.material=rubber;
   else if(/cupped stainless propeller|polished propeller exhaust barrel|trim piston|bracket stainless/.test(name))o.material=steel;
  });
@@ -61,7 +62,7 @@ export function enhanceEngineFinish(model,{horsepower=250,compact=false}={}){
  }
  if(compact){
   const b=new THREE.Box3().setFromObject(cowling),s=b.getSize(new THREE.Vector3()),c=b.getCenter(new THREE.Vector3());
-  const y=b.min.y+s.y*.53,w=s.x*.66,h=s.y*.135;
+  const y=b.min.y+s.y*.53,w=s.x*.72,h=s.y*.14;
   decal('Tohatsu | side factory graphics port',brand,[c.x,y,b.min.z],[0,Math.PI,0],[w,h,s.z*.45]);
   decal('Tohatsu | side factory graphics starboard',brand,[c.x,y,b.max.z],[0,0,0],[w,h,s.z*.45]);
   if(horsepower<=140){
@@ -77,5 +78,5 @@ export function enhanceEngineFinish(model,{horsepower=250,compact=false}={}){
  decal('Tohatsu | aft factory name',brand,[-4.815,1.635,0],[0,-Math.PI/2,0],[.285,.067,.19]);
  decal('Tohatsu | aft factory '+horsepower,hp,[-4.815,1.490,0],[0,-Math.PI/2,0],[.290,.173,.23]);
  }
- model.userData.engineFinishVersion=54;model.updateMatrixWorld(true);
+ model.userData.engineFinishVersion=68;model.updateMatrixWorld(true);
 }

@@ -1,10 +1,10 @@
 import {createGarminOptions,GARMIN_CHOICES} from './Garmin_Options.js?v=55.1';
-import {createFleetBoat,BOAT_CHOICES} from './Boat_Fleet.js?v=66';
+import {createFleetBoat,BOAT_CHOICES} from './Boat_Fleet.js?v=68';
 import {enhanceConsoleFinish} from './Console_Finish.js?v=51';
-import {enhanceEngineFinish} from './Engine_Finish.js?v=56.1';
+import {enhanceEngineFinish} from './Engine_Finish.js?v=68';
 import {createTrollingMotor} from './Boat_Trolling_Motor.js?v=54.3';
 import {createPowerPoles} from './Boat_Power_Poles.js?v=25';
-import {createEngineOptions,createTrollingOptions,ENGINE_CHOICES,TROLLING_CHOICES,engineChoicesForBoat} from './Motor_Options.js?v=56.1';
+import {createEngineOptions,createTrollingOptions,ENGINE_CHOICES,TROLLING_CHOICES,engineChoicesForBoat} from './Motor_Options.js?v=68';
 import * as THREE from 'three';
 import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
@@ -171,7 +171,7 @@ function renderCards(){
   $('#options-left').hidden=$('#options-right').hidden=!arrows;
   $('#options-left').setAttribute('aria-label',`Scroll ${equipment} options left`);$('#options-right').setAttribute('aria-label',`Scroll ${equipment} options right`);
   $('#options-left').title=`Previous ${equipment} options`;$('#options-right').title=`Next ${equipment} options`;
-  const available=selected==='engine'?engineChoicesForBoat(activeBoat):choices[selected];
+  const available=selected==='engine'?engineChoicesForBoat(activeBoat).sort((a,b)=>Number(b.id.replace(/\D/g,''))-Number(a.id.replace(/\D/g,''))):choices[selected];
   if(!available.length){const message=document.createElement('p');message.className='empty-options';message.textContent='Twin inboard pod drives. The engines are enclosed inside the yacht; this first yacht layout has a fixed propulsion setup.';list.appendChild(message);}
   for(const item of available){
     const ready=selected==='garmin'?garminOptions?.readyState:selected==='engine'?engineOptions?.readyState:trollingOptions?.readyState;
@@ -193,7 +193,7 @@ function renderCards(){
     list.appendChild(button);
   }
   list.scrollLeft=0;
-  requestAnimationFrame(()=>{const active=list.querySelector('[aria-pressed="true"]');if(active)list.scrollLeft=Math.max(0,active.offsetLeft-list.offsetLeft-(list.clientWidth-active.offsetWidth)/2);updateOptionArrows();});
+  requestAnimationFrame(()=>{list.scrollLeft=0;updateOptionArrows();});
 }
 let propellerMotion=null;
 function spinEnginePropeller(){

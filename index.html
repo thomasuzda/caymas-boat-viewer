@@ -46,6 +46,19 @@
 @media(max-width:700px){.topbar{flex-wrap:wrap;gap:12px}.brand{width:100%;flex-basis:100%}.tools{width:100%;display:grid;grid-template-columns:repeat(4,minmax(0,1fr))}.tools .pill{padding:8px 4px;font-size:11px;flex-direction:column;gap:5px;min-height:57px}.brand h1{font-size:21px}.boat-select{margin-top:8px}.boat-select select{max-width:none;min-height:44px}.boat-summary{font-size:10px;top:10px;left:10px;padding:8px 10px}.viewer-footer{justify-content:center;padding-left:12px;padding-right:12px;gap:6px;flex-direction:column}.boat-name{display:block;border:0;padding:0;font-size:11px}.gesture-hint{white-space:normal;text-align:center;font-size:10px;line-height:1.5}.mouse-hint{display:none}.touch-hint{display:inline}#stage{border-width:6px}#tray{max-height:34dvh;padding-bottom:max(12px,env(safe-area-inset-bottom))}.trayhead{align-items:flex-start}.trayhead h2{font-size:17px}.tray-actions{flex-shrink:0}.card{min-height:86px}.tools .pill.primary svg{margin:0}.topbar{padding-top:max(12px,env(safe-area-inset-top));padding-left:max(14px,env(safe-area-inset-left));padding-right:max(14px,env(safe-area-inset-right))}}
 @media(max-height:500px) and (min-width:561px){.topbar{flex-wrap:nowrap;padding:6px max(12px,env(safe-area-inset-right)) 6px max(12px,env(safe-area-inset-left));gap:12px}.brand{width:auto;flex:0 1 220px}.brand h1,.brand .eyebrow{display:none}.boat-select{margin:0}.boat-select select{min-height:44px;font-size:16px;max-width:220px}.tools{width:auto;display:flex;padding:3px;gap:3px}.tools .pill{flex-direction:row;min-height:44px;padding:8px 10px;font-size:11px}.viewer-footer{padding-top:6px;padding-bottom:max(6px,env(safe-area-inset-bottom));flex-direction:row}.boat-summary{display:none}#tray{max-height:40dvh}.closer,.close{min-height:44px;height:44px}}
 
+/* Keep the boat visible while comparing equipment on phones. */
+@media(max-width:700px){
+ .app:has(#tray:not([hidden])) .brand h1,.app:has(#tray:not([hidden])) .brand .eyebrow,.app:has(#tray:not([hidden])) .viewer-footer{display:none}
+ .app:has(#tray:not([hidden])) .boat-select{margin-top:0}
+ .app:has(#tray:not([hidden])) .topbar{padding-top:max(8px,env(safe-area-inset-top));padding-bottom:8px;gap:8px}
+ #tray{padding:7px 10px max(7px,env(safe-area-inset-bottom));max-height:190px;max-height:min(190px,26dvh)}
+ .trayhead{align-items:center;gap:6px}.trayhead h2{font-size:15px;margin:0;line-height:1.2}.trayhead .note,#choice-note{display:none}
+ .tray-actions{gap:5px}.closer{min-height:44px;font-size:11px;padding:7px 9px}.close{width:44px;height:44px;min-height:44px}
+ .cards{padding:5px 1px 2px;gap:7px}.card{flex-basis:158px;min-height:70px;grid-template-columns:42px minmax(0,1fr);gap:7px;padding:6px;border-radius:7px}.card[aria-pressed=true]{padding:5px}.product-photo{height:49px}.card strong{font-size:11px}.card small{font-size:9px;line-height:1.2;margin-top:3px}
+ .option-picker[data-arrows=true]{grid-template-columns:44px minmax(0,1fr) 44px;gap:3px}
+}
+@media(max-height:500px) and (pointer:coarse){#tray{max-height:145px}.app:has(#tray:not([hidden])) .viewer-footer{display:none}.trayhead .note,#choice-note{display:none}.cards{padding-top:3px}.card{min-height:65px}}
+
 </style>
 </head>
 <body>
@@ -72,5 +85,5 @@
 </section>
 <div id="status" role="status" aria-live="polite">Loading your boat</div>
 </main>
-<script type="module" src="Boat_Configurator.js?v=67"></script>
+<script type="module" src="Boat_Configurator.js?v=68"></script>
 </body></html>
