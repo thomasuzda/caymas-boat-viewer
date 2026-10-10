@@ -350,7 +350,11 @@ new GLTFLoader().load('Caymas_26HB_Tohatsu_Garmin.glb?v=53.3',g=>{
   host.dataset.boat='caymas';host.dataset.engineCount='1';
   const caymas={root:model,current:{...current},choice:activeBoat,garminOptions,engineOptions,trollingOptions,trollingMotor,powerPoles};
   caymas.ready=Promise.all([garminOptions.ready,engineOptions.ready,trollingOptions.ready]);fleet.set('caymas',caymas);
-  caymas.ready.then(()=>{$('#boat-select').disabled=false;const requested=new URLSearchParams(location.search).get('boat');if(requested&&requested!=='caymas'&&BOAT_CHOICES.some(c=>c.id===requested))switchBoat(requested);}).catch(()=>{announce('Some equipment could not load. Refresh to try again.');});
+  // Boat browsing remains available even if an optional equipment asset fails.
+  $('#boat-select').disabled=false;
+  const requested=new URLSearchParams(location.search).get('boat');
+  if(requested&&requested!=='caymas'&&BOAT_CHOICES.some(c=>c.id===requested))switchBoat(requested);
+  caymas.ready.catch(()=>{announce('Some equipment could not load. You can still choose another boat.');});
   updateBoatBounds();
   $('#loading').hidden=true;
   for(const button of document.querySelectorAll('.tools button,.zoom-tools button'))button.disabled=false;
