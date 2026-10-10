@@ -331,7 +331,7 @@ canvas.addEventListener('keydown',e=>{
     camera.position.copy(controls.target).add(new THREE.Vector3().setFromSpherical(spherical));controls.update();dirty=true;e.preventDefault();
   }
 });
-new GLTFLoader().load('Caymas_26HB_Tohatsu_Garmin.glb?v=53.3',g=>{
+new GLTFLoader().load('Caymas_26HB_Tohatsu_Garmin.glb?v=64',g=>{
   model=g.scene;model.traverse(o=>{
     const index=g.parser.associations.get(o)?.nodes;if(index!==undefined)o.userData.sourceName=g.parser.json.nodes[index].name;
     if(/^Stern \| (port compartment|starboard livewell) blue basin$/.test(source(o)))o.visible=false;
