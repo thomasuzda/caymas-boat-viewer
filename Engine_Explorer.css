@@ -1,0 +1,14 @@
+/* The inspection scene shows the uncovered engine mounted at the boat stern. */
+#engine-explorer{position:fixed;inset:0;width:100%;height:100%;height:100dvh;max-width:none;max-height:none;margin:0;padding:0;border:0;overflow:hidden;background:transparent;outline:none;z-index:100;touch-action:none;cursor:grab}
+#engine-explorer::backdrop{background:rgba(222,233,235,.45)}
+#engine-explorer .engine-running-stage{position:absolute;inset:0;pointer-events:auto}
+#engine-explorer canvas{width:100%;height:100%;display:block;cursor:grab}
+.engine-exit-button{position:absolute;z-index:2;bottom:max(16px,env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);min-width:106px;min-height:36px;padding:8px 15px;border:1px solid rgba(35,69,76,.18);border-radius:20px;background:rgba(243,248,248,.65);color:rgba(30,65,73,.65);font:400 11px/1.4 system-ui,-apple-system,sans-serif;letter-spacing:.025em;cursor:pointer;backdrop-filter:blur(7px)}
+.engine-exit-button:hover{background:rgba(248,252,252,.9);color:#244952}
+.engine-exit-button:focus-visible{outline:2px solid #318b92;outline-offset:3px}
+#engine-explorer canvas.dragging{cursor:grabbing}
+body.engine-view-open .topbar,body.engine-view-open .viewer-footer,body.engine-view-open .zoom-tools{visibility:hidden;pointer-events:none}
+body.engine-view-open .topbar,body.engine-view-open .viewer-footer{position:absolute}
+body.engine-view-open .app{grid-template-rows:minmax(0,1fr)}
+body.engine-view-open #stage{grid-row:1}
+@media(prefers-contrast:more){.engine-exit-button{color:#365b62;background:white;border-color:#365b62}}
