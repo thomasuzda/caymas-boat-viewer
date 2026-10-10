@@ -1,10 +1,10 @@
 import {createGarminOptions,GARMIN_CHOICES} from './Garmin_Options.js?v=55.1';
-import {createFleetBoat,BOAT_CHOICES} from './Boat_Fleet.js?v=69';
+import {createFleetBoat,BOAT_CHOICES} from './Boat_Fleet.js?v=70';
 import {enhanceConsoleFinish} from './Console_Finish.js?v=51';
 import {enhanceEngineFinish} from './Engine_Finish.js?v=68';
 import {createTrollingMotor} from './Boat_Trolling_Motor.js?v=54.3';
 import {createPowerPoles} from './Boat_Power_Poles.js?v=25';
-import {createEngineOptions,createTrollingOptions,ENGINE_CHOICES,TROLLING_CHOICES,engineChoicesForBoat} from './Motor_Options.js?v=69';
+import {createEngineOptions,createTrollingOptions,ENGINE_CHOICES,TROLLING_CHOICES,engineChoicesForBoat} from './Motor_Options.js?v=70';
 import * as THREE from 'three';
 import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
@@ -185,6 +185,7 @@ function renderCards(){
       const priorPosition=camera.position.clone(),priorTarget=controls.target.clone();stopMotion();view={kind:'free'};
       const controller=selected==='garmin'?garminOptions:selected==='engine'?engineOptions:trollingOptions;
       if(!controller?.select(item.id)){announce('Options are still loading.');return;}
+      if(selected==='engine'){engineRunning=true;spinEnginePropeller();}
       camera.position.copy(priorPosition);controls.target.copy(priorTarget);controls.update();
       for(const card of list.children){const active=card.dataset.model===item.id;card.setAttribute('aria-pressed',String(active));if(!card.disabled)card.querySelector('.chip').textContent=active?'✓ '+verb:'Choose option';}
       const result=selected==='garmin'?item.label+` installed on ${garminOptions.installedCount===2?'both displays':'the helm'}.`:item.label+(selected==='engine'&&activeBoat.engineCount===2?' selected for both outboards.':' selected.');
@@ -195,7 +196,12 @@ function renderCards(){
   list.scrollLeft=0;
   requestAnimationFrame(()=>{list.scrollLeft=0;updateOptionArrows();});
 }
-let propellerMotion=null;
+let propellerMotion=null,engineRunning=false;
+function stopEnginePropeller(){
+ engineRunning=false;
+ if(propellerMotion)for(const item of propellerMotion.items)item.group.quaternion.copy(item.rest);
+ propellerMotion=null;host.dataset.enginePropeller='stopped';renderer.shadowMap.needsUpdate=true;dirty=true;
+}
 function spinEnginePropeller(){
  if(reducedMotion.matches||!current.engine)return;
  if(propellerMotion)for(const item of propellerMotion.items)item.group.quaternion.copy(item.rest);
@@ -214,7 +220,7 @@ function spinEnginePropeller(){
    parent.updateWorldMatrix(true,true);
    const center=new THREE.Box3().setFromObject(barrel).getCenter(new THREE.Vector3());
    group=new THREE.Group();group.name='Propeller | click motion';group.position.copy(parent.worldToLocal(center));parent.add(group);group.updateWorldMatrix(true,false);
-   for(const blade of blades)group.attach(blade);
+   for(const blade of blades){blade.castShadow=false;group.attach(blade);}
    parent.userData.propellerSpinGroup=group;
   }
   if(items.some(item=>item.group===group))continue;
@@ -227,7 +233,7 @@ function spinEnginePropeller(){
 function openPart(part,fromButton=false){
   if(!model)return;
   if(part==='trolling'&&!trollingMotor)return;
-  if(part==='engine')spinEnginePropeller();
+  if(part==='engine'){engineRunning=true;spinEnginePropeller();}else stopEnginePropeller();
   if(part==='trolling'&&!fromButton&&selected==='trolling'&&!$('#tray').hidden){toggleTrollingMotor(true);return;}
   if(part.startsWith('pole-')){togglePole(part.slice(5));return;}
   const priorPosition=camera.position.clone(),priorTarget=controls.target.clone();transition=null;view={kind:'free'};
@@ -263,7 +269,7 @@ function focusPart(part){
   announce((part==='trolling'?'Trolling motor':part==='garmin'?'Garmin':'Engine')+' view. Drag to orbit freely.');
 }
 function closeOptions(returnFocus=true){
-  const was=selected;selected=null;$('#tray').hidden=true;
+  const was=selected;stopEnginePropeller();selected=null;$('#tray').hidden=true;
   for(const id of ['engine','garmin','trolling'])$('#'+id).setAttribute('aria-pressed','false');
   if(model)resize();if(returnFocus&&was){$('#'+was).focus({preventScroll:true});announce('Options closed.');}dirty=true;
 }
@@ -362,7 +368,7 @@ new GLTFLoader().load('Caymas_26HB_Tohatsu_Garmin.glb?v=64',g=>{
   garminOptions=createGarminOptions({root:current.garmin,source,anisotropy:Math.min(mobileRendering?4:16,renderer.capabilities.getMaxAnisotropy()),onChange:id=>{if(model!==g.scene)return;state.garmin=id;host.dataset.garmin=id;host.dataset.garminDisplayCount='2';renderer.shadowMap.needsUpdate=true;dirty=true;}});
   garminOptions.ready.then(()=>{if(selected==='garmin'){renderCards();$('#choice-note').textContent='Choose a Garmin to switch both displays.';}updateBoatBounds();dirty=true;}).catch(error=>{host.dataset.garminError='true';console.error('Garmin display options could not load.',error);if(selected==='garmin')$('#choice-note').textContent='The display options could not load. Refresh to try again.';});
   engineOptions=createEngineOptions({root:current.engine,allowed:engineChoicesForBoat(BOAT_CHOICES[0]).map(c=>c.id),onChange:id=>{if(model!==g.scene)return;state.engine=id;host.dataset.engine=id;renderer.shadowMap.needsUpdate=true;dirty=true;}});
-  engineOptions.ready.then(()=>{if(selected==='engine'){renderCards();$('#choice-note').textContent='Choose a covered Tohatsu horsepower option.';}updateBoatBounds();dirty=true;}).catch(error=>{console.error('Tohatsu options could not load.',error);host.dataset.engineError='true';if(selected==='engine')$('#choice-note').textContent='The engine options could not load. Refresh to try again.';});
+  engineOptions.ready.then(()=>{if(selected==='engine'){engineRunning=true;spinEnginePropeller();renderCards();$('#choice-note').textContent='Choose a covered Tohatsu horsepower option.';}updateBoatBounds();dirty=true;}).catch(error=>{console.error('Tohatsu options could not load.',error);host.dataset.engineError='true';if(selected==='engine')$('#choice-note').textContent='The engine options could not load. Refresh to try again.';});
   host.dataset.engine='bft250';
   powerPoles=createPowerPoles(model,source,(side,target,moving)=>{
     const label=side==='port'?'Port':'Starboard';
@@ -477,13 +483,12 @@ renderer.setAnimationLoop(now=>{
     camera.position.copy(controls.target).addScaledVector(dir,distance);dirty=true;
     if(t===1){orbitReturn=null;view={kind:'boat'};}
   }
-  if(propellerMotion){
-    const t=Math.min(1,(now-propellerMotion.start)/1700);
-    const eased=t*t*(3-2*t),rotation=new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1,0,0),Math.PI*8*eased);
+  if(propellerMotion&&engineRunning&&!reducedMotion.matches){
+    propellerMotion.angle=((propellerMotion.angle||0)+dt*Math.PI*5)%(Math.PI*2);
+    const rotation=new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1,0,0),propellerMotion.angle);
     for(const item of propellerMotion.items)item.group.quaternion.copy(rotation).multiply(item.rest);
-    if(!mobileRendering||t===1)renderer.shadowMap.needsUpdate=true;dirty=true;
-    if(t===1){for(const item of propellerMotion.items)item.group.quaternion.copy(item.rest);propellerMotion=null;host.dataset.enginePropeller='stopped';}
-  }
+    dirty=true;
+  }else if(propellerMotion)stopEnginePropeller();
   const polesMoved=powerPoles?.update(now),trollingMoved=trollingMotor?.update(now);
   const equipmentMoving=!!(polesMoved||trollingMoved);
   if(equipmentMoving||wasEquipmentMoving){
@@ -495,7 +500,7 @@ renderer.setAnimationLoop(now=>{
   wasEquipmentMoving=equipmentMoving;
   const moved=controls.update(dt);
   if(mobileRendering){
-    if(moved||transition||orbitReturn||propellerMotion||equipmentMoving||tap.pointers.size)lastPhoneMotion=now;
+    if(moved||transition||orbitReturn||equipmentMoving||tap.pointers.size)lastPhoneMotion=now;
     const ratio=Math.min(devicePixelRatio,now-lastPhoneMotion<300?1.25:pixelRatioLimit);
     if(ratio!==phonePixelRatio){phonePixelRatio=ratio;renderer.setPixelRatio(ratio);dirty=true;host.dataset.imageQuality=ratio>1.25?'sharp':'moving';}
   }

@@ -31,7 +31,7 @@ export function createEngineOptions({root,onChange=()=>{},placements=null,allowe
   selected=id;root.userData.engineModel=id;root.updateWorldMatrix(true,true);onChange(id);return true;
  }};
  controller.ready=Promise.all(ENGINE_CHOICES.filter(c=>allowed.includes(c.id)).map(async c=>{
-  const g=await loader.loadAsync(`Motor_Refinement/Tohatsu_${c.id}.glb?v=69`),mount=new THREE.Group();
+  const g=await loader.loadAsync(`Motor_Refinement/Tohatsu_${c.id}.glb?v=70`),mount=new THREE.Group();
   root.updateWorldMatrix(true,false);let sceneRoot=root;while(sceneRoot.parent&&!sceneRoot.parent.isScene)sceneRoot=sceneRoot.parent;
   mount.matrix.copy(root.matrixWorld).invert().multiply(sceneRoot.matrixWorld);mount.matrixAutoUpdate=false;mount.name=`Installed Tohatsu | ${c.id}`;mount.visible=false;
   g.scene.traverse(o=>{
@@ -46,7 +46,7 @@ export function createEngineOptions({root,onChange=()=>{},placements=null,allowe
     else if(/rubber|gasket|recess/i.test(m.name)){m.metalness=0;m.roughness=.78;}
    }
   });
-  enhanceEngineFinish(g.scene,{horsepower:Number(c.id.replace(/\D/g,'')),compact:c.id!=='bft250'});
+  enhanceEngineFinish(g.scene,{horsepower:Number(c.id.replace(/\D/g,'')),compact:true});
   if(placements){
    mount.matrix.identity();
    for(const position of placements){const installation=new THREE.Group();installation.position.copy(position).sub(new THREE.Vector3(-3.8989,1.32,0));installation.add(g.scene.clone(true));mount.add(installation);}
