@@ -405,13 +405,21 @@ function fleetTrolling(session,target,moving){
  announce(`Trolling motor ${host.dataset.trollingMotor}.`);
  if(selected==='trolling')$('#choice-note').textContent=`Motor ${host.dataset.trollingMotor}. Click it again to ${target?'raise':'lower'} it.`;
 }
+let boatRequest=0;
+const boatLoads=new Map();
 async function switchBoat(id){
- const choice=BOAT_CHOICES.find(c=>c.id===id);if(!choice||id===activeBoat.id)return;
- $('#boat-select').disabled=true;$('#loading').hidden=false;$('#loading-text').textContent='Preparing your boat…';
+ const choice=BOAT_CHOICES.find(c=>c.id===id);if(!choice)return;
+ const request=++boatRequest;
+ if(id===activeBoat.id){$('#loading').hidden=true;return;}
+ $('#boat-select').disabled=false;$('#loading').hidden=false;$('#loading-text').textContent='Loading '+choice.label+'…';
  try{
   let session=fleet.get(id);
-  if(!session){session=await createFleetBoat({choice,trollingTemplate,source,anisotropy:Math.min(mobileRendering?4:16,renderer.capabilities.getMaxAnisotropy()),onEquipment:fleetEquipment,onTrolling:fleetTrolling});fleet.set(id,session);scene.add(session.root);session.root.visible=false;}
-  await session.ready;closeOptions(false);stopMotion();model.visible=false;model=session.root;model.visible=true;activeBoat=choice;
+  if(!session){
+   if(!boatLoads.has(id))boatLoads.set(id,createFleetBoat({choice,trollingTemplate,source,anisotropy:Math.min(mobileRendering?4:16,renderer.capabilities.getMaxAnisotropy()),onEquipment:fleetEquipment,onTrolling:fleetTrolling}).then(loaded=>{fleet.set(id,loaded);scene.add(loaded.root);loaded.root.visible=false;return loaded;}).finally(()=>boatLoads.delete(id)));
+   session=await boatLoads.get(id);
+  }
+  if(request!==boatRequest)return;
+  await session.ready;if(request!==boatRequest)return;closeOptions(false);stopMotion();model.visible=false;model=session.root;model.visible=true;activeBoat=choice;
   Object.assign(current,session.current);for(const part of ['engine','garmin','trolling'])if(!session.current[part])delete current[part];
   ({garminOptions,engineOptions,trollingOptions,trollingMotor,powerPoles}=session);
   state.engine=engineOptions?.selected||'inboard';state.garmin=garminOptions.selected;state.trolling=trollingOptions?.selected||'none';
@@ -422,8 +430,8 @@ async function switchBoat(id){
   const shadowExtent=id==='yacht'?12:id==='offshore'?8:6;
   Object.assign(light.shadow.camera,{left:-shadowExtent,right:shadowExtent,top:shadowExtent,bottom:-shadowExtent,far:40});light.shadow.camera.updateProjectionMatrix();
   updateBoatBounds();fitBoat();renderer.shadowMap.needsUpdate=true;dirty=true;announce(choice.label+' selected. '+choice.description);
- }catch(error){console.error('Boat selection failed',error);$('#boat-select').value=activeBoat.id;announce('That boat could not load. Your current boat is still available.');}
- finally{$('#boat-select').disabled=false;$('#loading').hidden=true;}
+ }catch(error){if(request!==boatRequest)return;console.error('Boat selection failed',error);$('#boat-select').value=activeBoat.id;announce('That boat could not load. Your current boat is still available.');}
+ finally{if(request===boatRequest){$('#boat-select').disabled=false;$('#loading').hidden=true;}}
 }
 $('#boat-select').onchange=e=>switchBoat(e.target.value);
 $('#boat-structure').onchange=e=>{const session=fleet.get(activeBoat.id);if(!session?.setLayout?.(e.target.value))return;host.dataset.structure=session.layout;updateBoatBounds();renderer.shadowMap.needsUpdate=true;dirty=true;announce(session.layout==='tritoon'?'Three-tube tritoon selected.':'Two-tube pontoon selected.');};
