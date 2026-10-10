@@ -1,0 +1,392 @@
+[
+  {
+    "id": "small-cc",
+    "label": "Key West 189 FS",
+    "L": 5.72,
+    "B": 2.438,
+    "gun": 1.065,
+    "deck": 0.64,
+    "cx": 0.12,
+    "cy": 0,
+    "cw": 0.92,
+    "ct": 1.86,
+    "roof": false,
+    "helm": [
+      -0.32,
+      1.61,
+      0
+    ],
+    "displays": 1,
+    "maxDisplay": 0.341,
+    "maxHP": 150,
+    "engineHeight": 1.04,
+    "trollingAnchor": [
+      2.2,
+      1.235,
+      -0.67
+    ],
+    "trollingScale": 0.72,
+    "referenceFolder": "02_Key_West_189_FS",
+    "modelingStatus": "Photo-guided reconstruction; dimensions and hidden structure remain approximate.",
+    "helmPitch": 0.13962634015954636
+  },
+  {
+    "id": "bass",
+    "label": "Ranger Z520R",
+    "L": 6.38,
+    "B": 2.44,
+    "gun": 0.89,
+    "deck": 0.54,
+    "cx": -0.5,
+    "cy": -0.68,
+    "cw": 0.8,
+    "ct": 1.54,
+    "roof": false,
+    "helm": [
+      -1.019,
+      1.315,
+      0.68
+    ],
+    "displays": 1,
+    "maxDisplay": 0.341,
+    "maxHP": 250,
+    "referenceFolder": "03_Ranger_Z520R_2026",
+    "modelingStatus": "Photo-guided reconstruction; hidden structure and small dimensions approximate.",
+    "trollingAnchor": [
+      2.5,
+      0.972,
+      -0.59
+    ],
+    "trollingScale": 0.69,
+    "helmPitch": 0.22689280275926285
+  },
+  {
+    "id": "flats",
+    "label": "Hewes Redfisher 18",
+    "L": 5.74,
+    "B": 2.413,
+    "gun": 0.9,
+    "deck": 0.53,
+    "cx": -0.14,
+    "cy": 0,
+    "cw": 0.82,
+    "ct": 1.78,
+    "roof": false,
+    "helm": [
+      -0.58,
+      1.55,
+      0
+    ],
+    "displays": 1,
+    "maxDisplay": 0.341,
+    "maxHP": 150,
+    "engineHeight": 0.885,
+    "trollingAnchor": [
+      2.1,
+      1.08,
+      -0.66
+    ],
+    "trollingScale": 0.69,
+    "referenceFolder": "04_Hewes_Redfisher_18",
+    "modelingStatus": "Photo-guided reconstruction; dimensions and hidden structure remain approximate.",
+    "helmPitch": 0.22689280275926285
+  },
+  {
+    "id": "offshore",
+    "label": "Sea Hunt Ultra 305SE",
+    "L": 9.19,
+    "B": 2.97,
+    "gun": 1.59,
+    "deck": 1.06,
+    "cx": -0.12,
+    "cy": 0,
+    "cw": 1.34,
+    "ct": 2.36,
+    "roof": true,
+    "helm": [
+      -0.565,
+      2.105,
+      0
+    ],
+    "displays": 2,
+    "maxDisplay": 0.385,
+    "maxHP": 250,
+    "referenceFolder": "05_Sea_Hunt_Ultra_305SE",
+    "modelingStatus": "Photo-guided reconstruction; hidden structure and small dimensions approximate.",
+    "engineMounts": [
+      [
+        -4.595,
+        1.55,
+        -0.66
+      ],
+      [
+        -4.595,
+        1.55,
+        0.66
+      ]
+    ],
+    "trollingAnchor": [
+      3.61,
+      1.785,
+      -0.78
+    ],
+    "trollingScale": 1.04,
+    "helmPitch": 0.13962634015954636
+  },
+  {
+    "id": "yacht",
+    "label": "Princess F45",
+    "L": 13.64,
+    "B": 4.25,
+    "gun": 1.92,
+    "deck": 1.4,
+    "cx": -0.38,
+    "cy": -0.59,
+    "cw": 1.62,
+    "ct": 4.43,
+    "roof": false,
+    "helm": [
+      -0.961,
+      4.19,
+      0.59
+    ],
+    "displays": 2,
+    "maxDisplay": 0.385,
+    "maxHP": 0,
+    "referenceFolder": "06_Princess_F45",
+    "modelingStatus": "Photo-guided reconstruction; hidden structure and small dimensions approximate.",
+    "helmPitch": 0.20943951023931956
+  },
+  {
+    "id": "skiff",
+    "label": "Carolina Skiff 19 LS",
+    "L": 5.84,
+    "B": 2.44,
+    "gun": 1.09,
+    "deck": 0.66,
+    "cx": -0.04,
+    "cy": 0,
+    "cw": 0.94,
+    "ct": 1.88,
+    "helm": [
+      -0.48,
+      1.64,
+      0
+    ],
+    "displays": 1,
+    "maxDisplay": 0.341,
+    "engineHeight": 1.064,
+    "maxHP": 115,
+    "referenceFolder": "07_Carolina_Skiff_19_LS",
+    "modelingStatus": "Photo-guided reconstruction; hidden structure and small dimensions approximate.",
+    "trollingAnchor": [
+      2.13,
+      1.21,
+      -0.7
+    ],
+    "trollingScale": 0.74,
+    "helmPitch": 0.22689280275926285
+  },
+  {
+    "id": "pontoon",
+    "label": "Sun Tracker Bass Buggy 18 DLX",
+    "L": 6.1,
+    "B": 2.49,
+    "gun": 1.56,
+    "deck": 0.94,
+    "cx": 0.1,
+    "cy": -0.78,
+    "cw": 0.7,
+    "ct": 1.82,
+    "helm": [
+      -0.415,
+      1.61,
+      0.78
+    ],
+    "displays": 1,
+    "maxDisplay": 0.264,
+    "engineHeight": 0.96,
+    "maxHP": 75,
+    "trollingAnchor": [
+      2.45,
+      0.985,
+      -0.97
+    ],
+    "trollingScale": 0.77,
+    "referenceFolder": "08_Sun_Tracker_Bass_Buggy_18_DLX",
+    "modelingStatus": "Photo-guided reconstruction; hidden structure and small dimensions approximate.",
+    "helmPitch": 0.3141592653589793
+  },
+  {
+    "id": "dual-console",
+    "label": "Grady-White Freedom 235",
+    "L": 7.188,
+    "B": 2.591,
+    "gun": 1.37,
+    "deck": 0.82,
+    "cx": 0.12,
+    "cy": -0.75,
+    "cw": 0.88,
+    "ct": 2.035,
+    "helm": [
+      -0.395,
+      1.79,
+      0.75
+    ],
+    "displays": 1,
+    "maxDisplay": 0.341,
+    "maxHP": 250,
+    "referenceFolder": "09_Grady_White_Freedom_235",
+    "modelingStatus": "Photo-guided reconstruction; hidden structure and small dimensions approximate.",
+    "engineHeight": 1.345,
+    "trollingAnchor": [
+      2.76,
+      1.55,
+      -0.72
+    ],
+    "trollingScale": 0.81,
+    "helmPitch": 0.17453292519943295
+  },
+  {
+    "id": "pilothouse",
+    "label": "Parker 2520 XLD Sport Cabin",
+    "L": 7.62,
+    "B": 2.89,
+    "gun": 1.39,
+    "deck": 0.87,
+    "cx": 0.93,
+    "cy": -0.71,
+    "cw": 0.9,
+    "ct": 2.08,
+    "helm": [
+      0.48,
+      1.84,
+      0.71
+    ],
+    "displays": 1,
+    "maxDisplay": 0.341,
+    "engineMounts": [
+      [
+        -3.81,
+        1.365,
+        -0.61
+      ],
+      [
+        -3.81,
+        1.365,
+        0.61
+      ]
+    ],
+    "maxHP": 250,
+    "trollingAnchor": [
+      2.88,
+      1.56,
+      -0.73
+    ],
+    "trollingScale": 0.87,
+    "referenceFolder": "10_Parker_2520_XLD_Sport_Cabin",
+    "modelingStatus": "Photo-guided reconstruction; hidden structure and small dimensions approximate.",
+    "helmPitch": 0.08726646259971647
+  },
+  {
+    "id": "power-cat",
+    "label": "World Cat 265CC-X",
+    "L": 7.77,
+    "B": 2.74,
+    "gun": 1.47,
+    "deck": 1.03,
+    "cx": 0.02,
+    "cy": 0,
+    "cw": 1.2,
+    "ct": 2.25,
+    "helm": [
+      -0.495,
+      2.01,
+      0
+    ],
+    "displays": 2,
+    "maxDisplay": 0.385,
+    "engineMounts": [
+      [
+        -3.885,
+        1.435,
+        -0.85
+      ],
+      [
+        -3.885,
+        1.435,
+        0.85
+      ]
+    ],
+    "maxHP": 200,
+    "trollingAnchor": [
+      2.7,
+      1.525,
+      -1.23
+    ],
+    "trollingScale": 0.9,
+    "referenceFolder": "11_World_Cat_265CC_X",
+    "modelingStatus": "Photo-guided reconstruction; hidden structure and small dimensions approximate.",
+    "helmPitch": 0.13962634015954636
+  },
+  {
+    "id": "jon",
+    "label": "Tracker Grizzly 1648 Utility",
+    "L": 4.9,
+    "B": 1.83,
+    "gun": 0.74,
+    "deck": 0.25,
+    "cx": -0.42,
+    "cy": -0.61,
+    "cw": 0.45,
+    "ct": 1.12,
+    "helm": [
+      -0.585,
+      1.02,
+      0.61
+    ],
+    "displays": 1,
+    "maxDisplay": 0.192,
+    "engineHeight": 0.715,
+    "maxHP": 40,
+    "trollingAnchor": [
+      1.78,
+      0.75,
+      -0.59
+    ],
+    "trollingScale": 0.6,
+    "referenceFolder": "12_Tracker_Grizzly_1648_Utility_Actual",
+    "modelingStatus": "Photo-guided reconstruction; hidden structure and small dimensions approximate.",
+    "approximationNote": "Gray camouflage will be refined as a texture; no exact factory pattern is claimed."
+  },
+  {
+    "id": "tritoon",
+    "label": "Bennington 22SX Stern Radius SPS",
+    "L": 6.7,
+    "B": 2.59,
+    "gun": 1.54,
+    "deck": 0.88,
+    "cx": -0.18,
+    "cy": -0.74,
+    "cw": 0.76,
+    "ct": 1.94,
+    "helm": [
+      -0.625,
+      1.7,
+      0.74
+    ],
+    "displays": 1,
+    "maxDisplay": 0.295,
+    "maxHP": 150,
+    "engineHeight": 1.0,
+    "trollingAnchor": [
+      2.91,
+      0.925,
+      -1.05
+    ],
+    "trollingScale": 0.75,
+    "referenceFolder": "13_Bennington_22SX_Stern_Radius_SPS",
+    "modelingStatus": "Photo-guided reconstruction; hidden structure and small dimensions approximate.",
+    "helmPitch": 0.2792526803190927
+  }
+]
