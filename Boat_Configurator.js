@@ -10,7 +10,10 @@ import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
 import {TapIntent,fitDistance} from './Boat_Interaction.js?v=20';
 const $=s=>document.querySelector(s),host=$('#viewport'),scene=new THREE.Scene();scene.background=new THREE.Color('#e5edef');
-const renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:'high-performance'});renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.05;host.appendChild(renderer.domElement);
+const mobileRendering=matchMedia('(pointer:coarse)').matches||/iPhone|iPad|iPod/.test(navigator.userAgent)||new URLSearchParams(location.search).get('performance')==='mobile';
+const pixelRatioLimit=mobileRendering?1.25:2;
+host.dataset.renderProfile=mobileRendering?'mobile':'desktop';
+const renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:'high-performance'});renderer.setPixelRatio(Math.min(devicePixelRatio,pixelRatioLimit));renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.05;host.appendChild(renderer.domElement);
 // Reuse the shadow map while orbiting; refresh it when a Power-Pole moves.
 renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;renderer.shadowMap.autoUpdate=false;
 // A darker studio with broad softboxes preserves highlight contrast on polished metal.
@@ -20,7 +23,7 @@ for(const [pos,size,power] of [[[4,9,-3],[1,8],1.8],[[-12,2,1],[3,13],3.0],[[11,
  const panel=new THREE.Mesh(new THREE.PlaneGeometry(...size),new THREE.MeshBasicMaterial({color:new THREE.Color(power,power,power),side:THREE.DoubleSide}));panel.position.set(...pos);panel.lookAt(0,0,0);studio.add(panel);
 }
 const pmrem=new THREE.PMREMGenerator(renderer);scene.environment=pmrem.fromScene(studio,.02).texture;pmrem.dispose();studio.traverse(o=>{o.geometry?.dispose();o.material?.dispose()});scene.add(new THREE.HemisphereLight(0xffffff,0x929393,.9));const light=new THREE.DirectionalLight(0xffffff,2);light.position.set(2,8,5);scene.add(light);
-light.castShadow=true;light.shadow.mapSize.set(2048,2048);Object.assign(light.shadow.camera,{left:-6,right:6,top:6,bottom:-6,near:.1,far:22});light.shadow.bias=-.00005;light.shadow.normalBias=.002;light.shadow.radius=2;
+light.castShadow=true;light.shadow.mapSize.set(mobileRendering?1024:2048,mobileRendering?1024:2048);Object.assign(light.shadow.camera,{left:-6,right:6,top:6,bottom:-6,near:.1,far:22});light.shadow.bias=-.00005;light.shadow.normalBias=.002;light.shadow.radius=2;
 const camera=new THREE.PerspectiveCamera(38,1,.01,500);
 const controls=new OrbitControls(camera,renderer.domElement);
 controls.enableDamping=true;controls.dampingFactor=.09;controls.rotateSpeed=.72;controls.zoomSpeed=.72;
@@ -132,7 +135,7 @@ function resize(){
   const w=Math.max(1,host.clientWidth),h=Math.max(1,host.clientHeight);
   if(w===previousWidth&&h===previousHeight)return;
   const oldAspect=camera.aspect;
-  renderer.setPixelRatio(Math.min(devicePixelRatio,w<600?1.5:2));renderer.setSize(w,h,false);
+  renderer.setPixelRatio(Math.min(devicePixelRatio,mobileRendering?pixelRatioLimit:w<600?1.5:2));renderer.setSize(w,h,false);
   camera.aspect=w/h;camera.updateProjectionMatrix();
   if(model){
     // Preserve manual close-ups, adapting their scale when a tray or window changes size.
@@ -341,11 +344,11 @@ new GLTFLoader().load('Caymas_26HB_Tohatsu_Garmin.glb?v=64',g=>{
       for(const m of materials){
         if(m.name.includes('mirror polished marine stainless')){m.envMapIntensity=.38;m.metalness=1;m.roughness=.17;m.anisotropy=0;}
         if(m.name.startsWith('V23')&&(m.name.includes('stainless')))m.envMapIntensity=.62;
-        if(m.name.startsWith('V23'))for(const texture of [m.normalMap,m.roughnessMap])if(texture){texture.anisotropy=Math.min(16,renderer.capabilities.getMaxAnisotropy());texture.needsUpdate=true;}
+        if(m.name.startsWith('V23'))for(const texture of [m.normalMap,m.roughnessMap])if(texture){texture.anisotropy=Math.min(mobileRendering?4:16,renderer.capabilities.getMaxAnisotropy());texture.needsUpdate=true;}
         // Backlit LCD artwork keeps its contrast when the viewing angle changes.
         if(m.name.startsWith('V22 LCD')){
           m.toneMapped=false;m.envMapIntensity=.06;
-          for(const texture of [m.map,m.emissiveMap])if(texture){texture.anisotropy=Math.min(16,renderer.capabilities.getMaxAnisotropy());texture.needsUpdate=true;}
+          for(const texture of [m.map,m.emissiveMap])if(texture){texture.anisotropy=Math.min(mobileRendering?4:16,renderer.capabilities.getMaxAnisotropy());texture.needsUpdate=true;}
         }
       }
     }
@@ -355,7 +358,7 @@ new GLTFLoader().load('Caymas_26HB_Tohatsu_Garmin.glb?v=64',g=>{
     model.traverse(o=>{if(pattern.test(source(o)))current[part]=o;});
     if(!current[part])throw new Error('Missing '+part+' assembly');current[part].traverse(o=>{o.userData.part=part;});
   }
-  garminOptions=createGarminOptions({root:current.garmin,source,anisotropy:Math.min(16,renderer.capabilities.getMaxAnisotropy()),onChange:id=>{if(model!==g.scene)return;state.garmin=id;host.dataset.garmin=id;host.dataset.garminDisplayCount='2';renderer.shadowMap.needsUpdate=true;dirty=true;}});
+  garminOptions=createGarminOptions({root:current.garmin,source,anisotropy:Math.min(mobileRendering?4:16,renderer.capabilities.getMaxAnisotropy()),onChange:id=>{if(model!==g.scene)return;state.garmin=id;host.dataset.garmin=id;host.dataset.garminDisplayCount='2';renderer.shadowMap.needsUpdate=true;dirty=true;}});
   garminOptions.ready.then(()=>{if(selected==='garmin'){renderCards();$('#choice-note').textContent='Choose a Garmin to switch both displays.';}updateBoatBounds();dirty=true;}).catch(error=>{host.dataset.garminError='true';console.error('Garmin display options could not load.',error);if(selected==='garmin')$('#choice-note').textContent='The display options could not load. Refresh to try again.';});
   engineOptions=createEngineOptions({root:current.engine,allowed:engineChoicesForBoat(BOAT_CHOICES[0]).map(c=>c.id),onChange:id=>{if(model!==g.scene)return;state.engine=id;host.dataset.engine=id;renderer.shadowMap.needsUpdate=true;dirty=true;}});
   engineOptions.ready.then(()=>{if(selected==='engine'){renderCards();$('#choice-note').textContent='Choose a covered Tohatsu horsepower option.';}updateBoatBounds();dirty=true;}).catch(error=>{console.error('Tohatsu options could not load.',error);host.dataset.engineError='true';if(selected==='engine')$('#choice-note').textContent='The engine options could not load. Refresh to try again.';});
@@ -407,7 +410,7 @@ async function switchBoat(id){
  $('#boat-select').disabled=true;$('#loading').hidden=false;$('#loading-text').textContent='Preparing your boat…';
  try{
   let session=fleet.get(id);
-  if(!session){session=await createFleetBoat({choice,trollingTemplate,source,anisotropy:Math.min(16,renderer.capabilities.getMaxAnisotropy()),onEquipment:fleetEquipment,onTrolling:fleetTrolling});fleet.set(id,session);scene.add(session.root);session.root.visible=false;}
+  if(!session){session=await createFleetBoat({choice,trollingTemplate,source,anisotropy:Math.min(mobileRendering?4:16,renderer.capabilities.getMaxAnisotropy()),onEquipment:fleetEquipment,onTrolling:fleetTrolling});fleet.set(id,session);scene.add(session.root);session.root.visible=false;}
   await session.ready;closeOptions(false);stopMotion();model.visible=false;model=session.root;model.visible=true;activeBoat=choice;
   Object.assign(current,session.current);for(const part of ['engine','garmin','trolling'])if(!session.current[part])delete current[part];
   ({garminOptions,engineOptions,trollingOptions,trollingMotor,powerPoles}=session);
@@ -424,7 +427,12 @@ async function switchBoat(id){
 }
 $('#boat-select').onchange=e=>switchBoat(e.target.value);
 $('#boat-structure').onchange=e=>{const session=fleet.get(activeBoat.id);if(!session?.setLayout?.(e.target.value))return;host.dataset.structure=session.layout;updateBoatBounds();renderer.shadowMap.needsUpdate=true;dirty=true;announce(session.layout==='tritoon'?'Three-tube tritoon selected.':'Two-tube pontoon selected.');};
+let lastMobileTick=-Infinity,lastMotionRefresh=-Infinity,wasEquipmentMoving=false;
 renderer.setAnimationLoop(now=>{
+  // Avoid redundant 120 Hz frames and pause GPU work in background tabs.
+  if(document.hidden)return;
+  if(mobileRendering&&now-lastMobileTick<1000/60-1)return;
+  lastMobileTick=now;
   const dt=Math.min(.05,(now-lastFrame)/1000||1/60);lastFrame=now;
   if(transition){
     const t=Math.min(1,(now-transition.start)/850),s=t*t*(3-2*t);
@@ -443,11 +451,18 @@ renderer.setAnimationLoop(now=>{
     const t=Math.min(1,(now-propellerMotion.start)/1700);
     const eased=t*t*(3-2*t),rotation=new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1,0,0),Math.PI*8*eased);
     for(const item of propellerMotion.items)item.group.quaternion.copy(rotation).multiply(item.rest);
-    renderer.shadowMap.needsUpdate=true;dirty=true;
+    if(!mobileRendering||t===1)renderer.shadowMap.needsUpdate=true;dirty=true;
     if(t===1){for(const item of propellerMotion.items)item.group.quaternion.copy(item.rest);propellerMotion=null;host.dataset.enginePropeller='stopped';}
   }
   const polesMoved=powerPoles?.update(now),trollingMoved=trollingMotor?.update(now);
-  if(polesMoved||trollingMoved){updateBoatBounds();renderer.shadowMap.needsUpdate=true;dirty=true;}
+  const equipmentMoving=!!(polesMoved||trollingMoved);
+  if(equipmentMoving||wasEquipmentMoving){
+    // Bounds and shadow passes traverse the whole boat; refresh at 5 Hz on phones,
+    // then immediately at the final pose. Equipment geometry still animates each frame.
+    if(!mobileRendering||!equipmentMoving||now-lastMotionRefresh>=200){updateBoatBounds();renderer.shadowMap.needsUpdate=true;lastMotionRefresh=now;}
+    dirty=true;
+  }
+  wasEquipmentMoving=equipmentMoving;
   const moved=controls.update(dt);if(model&&!transition&&(moved||dirty))fitCurrent();
   if(dirty||moved){renderer.render(scene,camera);dirty=false;}
 });
