@@ -191,9 +191,39 @@ function renderCards(){
   list.scrollLeft=0;
   requestAnimationFrame(()=>{const active=list.querySelector('[aria-pressed="true"]');if(active)list.scrollLeft=Math.max(0,active.offsetLeft-list.offsetLeft-(list.clientWidth-active.offsetWidth)/2);updateOptionArrows();});
 }
+let propellerMotion=null;
+function spinEnginePropeller(){
+ if(reducedMotion.matches||!current.engine)return;
+ if(propellerMotion)for(const item of propellerMotion.items)item.group.quaternion.copy(item.rest);
+ const parents=new Map();
+ current.engine.traverse(o=>{
+  if(!o.isMesh||!/propeller blade/i.test(source(o)))return;
+  for(let ancestor=o;ancestor;ancestor=ancestor.parent)if(!ancestor.visible)return;
+  const parent=o.parent;if(!parents.has(parent))parents.set(parent,[]);parents.get(parent).push(o);
+ });
+ const items=[];
+ for(const [parent,blades] of parents){
+  let group=parent.name==='Propeller | click motion'?parent:parent.userData.propellerSpinGroup;
+  if(!group){
+   const barrel=parent.children.find(o=>o.isMesh&&/propeller exhaust barrel/i.test(source(o)));
+   if(!barrel)continue;
+   parent.updateWorldMatrix(true,true);
+   const center=new THREE.Box3().setFromObject(barrel).getCenter(new THREE.Vector3());
+   group=new THREE.Group();group.name='Propeller | click motion';group.position.copy(parent.worldToLocal(center));parent.add(group);group.updateWorldMatrix(true,false);
+   for(const blade of blades)group.attach(blade);
+   parent.userData.propellerSpinGroup=group;
+  }
+  if(items.some(item=>item.group===group))continue;
+  items.push({group,rest:group.quaternion.clone()});
+ }
+ // Subsequent clicks find the blade group itself as their parent.
+ for(const [parent] of parents)if(parent.name==='Propeller | click motion'&&!items.some(item=>item.group===parent))items.push({group:parent,rest:parent.quaternion.clone()});
+ if(items.length){propellerMotion={items,start:performance.now()};host.dataset.enginePropeller='spinning';dirty=true;}
+}
 function openPart(part,fromButton=false){
   if(!model)return;
   if(part==='trolling'&&!trollingMotor)return;
+  if(part==='engine')spinEnginePropeller();
   if(part==='trolling'&&!fromButton&&selected==='trolling'&&!$('#tray').hidden){toggleTrollingMotor(true);return;}
   if(part.startsWith('pole-')){togglePole(part.slice(5));return;}
   const priorPosition=camera.position.clone(),priorTarget=controls.target.clone();transition=null;view={kind:'free'};
@@ -408,6 +438,13 @@ renderer.setAnimationLoop(now=>{
     controls.target.lerpVectors(orbitReturn.fromTarget,center,ease);
     camera.position.copy(controls.target).addScaledVector(dir,distance);dirty=true;
     if(t===1){orbitReturn=null;view={kind:'boat'};}
+  }
+  if(propellerMotion){
+    const t=Math.min(1,(now-propellerMotion.start)/1700);
+    const eased=t*t*(3-2*t),rotation=new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1,0,0),Math.PI*8*eased);
+    for(const item of propellerMotion.items)item.group.quaternion.copy(rotation).multiply(item.rest);
+    renderer.shadowMap.needsUpdate=true;dirty=true;
+    if(t===1){for(const item of propellerMotion.items)item.group.quaternion.copy(item.rest);propellerMotion=null;host.dataset.enginePropeller='stopped';}
   }
   const polesMoved=powerPoles?.update(now),trollingMoved=trollingMotor?.update(now);
   if(polesMoved||trollingMoved){updateBoatBounds();renderer.shadowMap.needsUpdate=true;dirty=true;}
