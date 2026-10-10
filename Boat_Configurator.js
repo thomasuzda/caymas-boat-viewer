@@ -11,7 +11,8 @@ import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
 import {TapIntent,fitDistance} from './Boat_Interaction.js?v=20';
 const $=s=>document.querySelector(s),host=$('#viewport'),scene=new THREE.Scene();scene.background=new THREE.Color('#e5edef');
 const mobileRendering=matchMedia('(pointer:coarse)').matches||/iPhone|iPad|iPod/.test(navigator.userAgent)||new URLSearchParams(location.search).get('performance')==='mobile';
-const pixelRatioLimit=mobileRendering?1.25:2;
+const pixelRatioLimit=mobileRendering?1.75:2;
+let phonePixelRatio=pixelRatioLimit,lastPhoneMotion=0;
 host.dataset.renderProfile=mobileRendering?'mobile':'desktop';
 const renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:'high-performance'});renderer.setPixelRatio(Math.min(devicePixelRatio,pixelRatioLimit));renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.05;host.appendChild(renderer.domElement);
 // Reuse the shadow map while orbiting; refresh it when a Power-Pole moves.
@@ -135,7 +136,7 @@ function resize(){
   const w=Math.max(1,host.clientWidth),h=Math.max(1,host.clientHeight);
   if(w===previousWidth&&h===previousHeight)return;
   const oldAspect=camera.aspect;
-  renderer.setPixelRatio(Math.min(devicePixelRatio,mobileRendering?pixelRatioLimit:w<600?1.5:2));renderer.setSize(w,h,false);
+  renderer.setPixelRatio(Math.min(devicePixelRatio,mobileRendering?phonePixelRatio:w<600?1.5:2));renderer.setSize(w,h,false);
   camera.aspect=w/h;camera.updateProjectionMatrix();
   if(model){
     // Preserve manual close-ups, adapting their scale when a tray or window changes size.
@@ -407,6 +408,21 @@ function fleetTrolling(session,target,moving){
 }
 let boatRequest=0;
 const boatLoads=new Map();
+let phoneLoadQueue=Promise.resolve();
+function releaseUnusedPhoneBoats(){
+ if(!mobileRendering)return;
+ const removed=[];
+ for(const [id,session] of fleet)if(id!=='caymas'&&session.root!==model){scene.remove(session.root);fleet.delete(id);removed.push(session.root);}
+ if(!removed.length)return;
+ // Preserve resources shared with the active boat or original trolling template.
+ const retained=new Set();
+ function resources(root,visit){root?.traverse(o=>{if(o.geometry)visit(o.geometry);for(const material of (Array.isArray(o.material)?o.material:o.material?[o.material]:[])){visit(material);for(const value of Object.values(material))if(value?.isTexture)visit(value);}});}
+ for(const session of fleet.values())resources(session.root,r=>retained.add(r));
+ resources(trollingTemplate,r=>retained.add(r));
+ const disposed=new Set();for(const root of removed)resources(root,r=>{if(!retained.has(r)&&!disposed.has(r)){r.dispose();disposed.add(r);}});
+ renderer.renderLists.dispose();host.dataset.cachedBoats=String(fleet.size);
+}
+
 async function switchBoat(id){
  const choice=BOAT_CHOICES.find(c=>c.id===id);if(!choice)return;
  const request=++boatRequest;
@@ -415,10 +431,16 @@ async function switchBoat(id){
  try{
   let session=fleet.get(id);
   if(!session){
-   if(!boatLoads.has(id))boatLoads.set(id,createFleetBoat({choice,trollingTemplate,source,anisotropy:Math.min(mobileRendering?4:16,renderer.capabilities.getMaxAnisotropy()),onEquipment:fleetEquipment,onTrolling:fleetTrolling}).then(loaded=>{fleet.set(id,loaded);scene.add(loaded.root);loaded.root.visible=false;return loaded;}).finally(()=>boatLoads.delete(id)));
+   if(!boatLoads.has(id)){
+    const load=()=>createFleetBoat({choice,trollingTemplate,source,anisotropy:Math.min(mobileRendering?4:16,renderer.capabilities.getMaxAnisotropy()),onEquipment:fleetEquipment,onTrolling:fleetTrolling});
+    // One phone load at a time, with the most recent queued request taking priority.
+    const task=mobileRendering?phoneLoadQueue.then(()=>$('#boat-select').value===id?load():null):load();
+    if(mobileRendering)phoneLoadQueue=task.catch(()=>{});
+    boatLoads.set(id,task.then(loaded=>{if(!loaded)return null;fleet.set(id,loaded);scene.add(loaded.root);loaded.root.visible=false;return loaded;}).finally(()=>boatLoads.delete(id)));
+   }
    session=await boatLoads.get(id);
   }
-  if(request!==boatRequest)return;
+  if(request!==boatRequest||!session){releaseUnusedPhoneBoats();return;}
   await session.ready;if(request!==boatRequest)return;closeOptions(false);stopMotion();model.visible=false;model=session.root;model.visible=true;activeBoat=choice;
   Object.assign(current,session.current);for(const part of ['engine','garmin','trolling'])if(!session.current[part])delete current[part];
   ({garminOptions,engineOptions,trollingOptions,trollingMotor,powerPoles}=session);
@@ -429,7 +451,7 @@ async function switchBoat(id){
   for(const pole of powerPoles?.poles||[])host.dataset[pole.side+'Pole']=pole.motion?(pole.target?'lowering':'raising'):(pole.value>.99?'down':'up');
   const shadowExtent=id==='yacht'?12:id==='offshore'?8:6;
   Object.assign(light.shadow.camera,{left:-shadowExtent,right:shadowExtent,top:shadowExtent,bottom:-shadowExtent,far:40});light.shadow.camera.updateProjectionMatrix();
-  updateBoatBounds();fitBoat();renderer.shadowMap.needsUpdate=true;dirty=true;announce(choice.label+' selected. '+choice.description);
+  releaseUnusedPhoneBoats();updateBoatBounds();fitBoat();renderer.shadowMap.needsUpdate=true;dirty=true;announce(choice.label+' selected. '+choice.description);
  }catch(error){if(request!==boatRequest)return;console.error('Boat selection failed',error);$('#boat-select').value=activeBoat.id;announce('That boat could not load. Your current boat is still available.');}
  finally{if(request===boatRequest){$('#boat-select').disabled=false;$('#loading').hidden=true;}}
 }
@@ -471,6 +493,12 @@ renderer.setAnimationLoop(now=>{
     dirty=true;
   }
   wasEquipmentMoving=equipmentMoving;
-  const moved=controls.update(dt);if(model&&!transition&&(moved||dirty))fitCurrent();
+  const moved=controls.update(dt);
+  if(mobileRendering){
+    if(moved||transition||orbitReturn||propellerMotion||equipmentMoving||tap.pointers.size)lastPhoneMotion=now;
+    const ratio=Math.min(devicePixelRatio,now-lastPhoneMotion<300?1.25:pixelRatioLimit);
+    if(ratio!==phonePixelRatio){phonePixelRatio=ratio;renderer.setPixelRatio(ratio);dirty=true;host.dataset.imageQuality=ratio>1.25?'sharp':'moving';}
+  }
+  if(model&&!transition&&(moved||dirty))fitCurrent();
   if(dirty||moved){renderer.render(scene,camera);dirty=false;}
 });
