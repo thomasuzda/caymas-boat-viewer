@@ -23,7 +23,7 @@ export const BOAT_CHOICES=[
 // Layout studies are separate native models. No hull is stretched from the Caymas.
 // Equipment is installed at boat-specific anchors and settings stay with each boat.
 export async function createFleetBoat({choice,trollingTemplate,source,anisotropy,onEquipment,onTrolling}){
- const [g,specs]=await Promise.all([new GLTFLoader().loadAsync(`Boat_Fleet/Boat_${choice.id}.glb?v=59.1`),fetch('Boat_Fleet/Boat_Layout_Specifications.json?v=59.1').then(r=>{if(!r.ok)throw Error('Boat layout unavailable');return r.json();})]);
+ const [g,specs]=await Promise.all([new GLTFLoader().loadAsync(`Boat_Fleet/Boat_${choice.id}.glb?v=66`),fetch('Boat_Fleet/Boat_Layout_Specifications.json?v=59.1').then(r=>{if(!r.ok)throw Error('Boat layout unavailable');return r.json();})]);
  const spec=specs.find(s=>s.id===choice.id);if(!spec)throw Error('Missing boat layout');
  const root=g.scene,current={},session={root,current,choice,spec,powerPoles:null};
  root.traverse(o=>{

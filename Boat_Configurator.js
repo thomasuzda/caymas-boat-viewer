@@ -1,5 +1,5 @@
 import {createGarminOptions,GARMIN_CHOICES} from './Garmin_Options.js?v=55.1';
-import {createFleetBoat,BOAT_CHOICES} from './Boat_Fleet.js?v=59.1';
+import {createFleetBoat,BOAT_CHOICES} from './Boat_Fleet.js?v=66';
 import {enhanceConsoleFinish} from './Console_Finish.js?v=51';
 import {enhanceEngineFinish} from './Engine_Finish.js?v=56.1';
 import {createTrollingMotor} from './Boat_Trolling_Motor.js?v=54.3';
