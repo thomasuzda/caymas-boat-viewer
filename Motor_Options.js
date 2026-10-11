@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
-import {enhanceEngineFinish} from './Engine_Finish.js?v=78.1';
+import {enhanceEngineFinish} from './Engine_Finish.js?v=80';
 
 export const ENGINE_CHOICES=[
  {id:'mfs25',label:'Tohatsu MFS25D',size:'25 hp · three cylinder'},
@@ -31,7 +31,7 @@ export function createEngineOptions({root,onChange=()=>{},placements=null,allowe
   selected=id;root.userData.engineModel=id;root.updateWorldMatrix(true,true);onChange(id);return true;
  }};
  controller.ready=Promise.all(ENGINE_CHOICES.filter(c=>allowed.includes(c.id)).map(async c=>{
-  const g=await loader.loadAsync(`Motor_Refinement/Tohatsu_${c.id}.glb?v=78.1`),mount=new THREE.Group();
+  const g=await loader.loadAsync(`Motor_Refinement/Tohatsu_${c.id}.glb?v=80`),mount=new THREE.Group();
   root.updateWorldMatrix(true,false);let sceneRoot=root;while(sceneRoot.parent&&!sceneRoot.parent.isScene)sceneRoot=sceneRoot.parent;
   mount.matrix.copy(root.matrixWorld).invert().multiply(sceneRoot.matrixWorld);mount.matrixAutoUpdate=false;mount.name=`Installed Tohatsu | ${c.id}`;mount.visible=false;
   g.scene.traverse(o=>{
