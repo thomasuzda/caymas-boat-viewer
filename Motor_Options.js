@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
-import {enhanceEngineFinish} from './Engine_Finish.js?v=81';
+import {enhanceEngineFinish} from './Engine_Finish.js?v=80';
 
 export const ENGINE_CHOICES=[
  {id:'mfs25',label:'Tohatsu MFS25D',size:'25 hp · three cylinder'},

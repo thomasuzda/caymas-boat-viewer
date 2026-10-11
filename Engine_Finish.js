@@ -35,31 +35,8 @@ function microfinish(kind){
  }
  const t=new THREE.DataTexture(data,n,n);t.wrapS=t.wrapT=THREE.RepeatWrapping;t.repeat.set(5,5);t.generateMipmaps=true;t.minFilter=THREE.LinearMipmapLinearFilter;t.magFilter=THREE.LinearFilter;t.needsUpdate=true;return t;
 }
-function addBft250ShellDetails(model,cowling){
- const key='BFT250 | reference shell details';
- if(model.getObjectByName(key))return;
- const b=new THREE.Box3().setFromObject(cowling),s=b.getSize(new THREE.Vector3()),c=b.getCenter(new THREE.Vector3());
- const seam=new THREE.MeshStandardMaterial({name:'DK1 panel seam',color:'#030508',roughness:.72,metalness:.05});
- const fastener=new THREE.MeshStandardMaterial({name:'DK1 stainless service fastener',color:'#aeb9bd',roughness:.2,metalness:.9});
- const trim=new THREE.MeshStandardMaterial({name:'DK1 lower apron trim',color:'#0b1018',roughness:.34,metalness:.22});
- const group=new THREE.Group();group.name=key;group.userData.part='engine';
- const rear=b.min.x-.006, mid=b.min.y+s.y*.50, low=b.min.y+s.y*.13, high=b.min.y+s.y*.86;
- // Rear center split: a narrow, recessed line visible from the stern.
- let g=new THREE.BoxGeometry(s.x*.012,s.y*.014,s.y*1.08);let m=new THREE.Mesh(g,seam);m.position.set(rear,mid,c.z);m.name='BFT250 rear center cowling split';group.add(m);
- // Three lower cover locks, kept flush with the shell like the factory inserts.
- for(const sy of [-1,1]){g=new THREE.CylinderGeometry(s.y*.040,s.y*.040,s.x*.018,20);m=new THREE.Mesh(g,fastener);m.rotation.z=Math.PI/2;m.position.set(rear-.002,sy*s.y*.31,b.min.z+s.z*.17);m.name='BFT250 lower cowling release cap';group.add(m);}
- // Front handle relief and the two upper air-slot accents.
- g=new THREE.BoxGeometry(s.x*.018,s.y*.18,s.z*.028);m=new THREE.Mesh(g,seam);m.position.set(b.max.x+.005,0,b.min.z+s.z*.86);m.name='BFT250 front cover handle relief';group.add(m);
- for(const sy of [-1,1]){g=new THREE.BoxGeometry(s.x*.018,s.y*.34,s.z*.018);m=new THREE.Mesh(g,seam);m.position.set(b.max.x-.008,sy*s.y*.54,b.min.z+s.z*.78);m.name='BFT250 upper intake shadow';group.add(m);}
- // Lower apron rub rail follows the molded taper into the midsection.
- const pts=[new THREE.Vector3(b.min.x-.003,-s.y*.38,b.min.z+s.z*.16),new THREE.Vector3(b.min.x+s.x*.22,-s.y*.43,b.min.z+s.z*.13),new THREE.Vector3(b.min.x+s.x*.64,-s.y*.42,b.min.z+s.z*.14),new THREE.Vector3(b.max.x-s.x*.08,-s.y*.30,b.min.z+s.z*.20)];
- const curve=new THREE.CatmullRomCurve3(pts);g=new THREE.TubeGeometry(curve,18,s.y*.014,8,false);m=new THREE.Mesh(g,trim);m.name='BFT250 lower apron rub rail';group.add(m);
- // Small underside drain bosses give the downward view the same service detail.
- for(const sy of [-1,1]){g=new THREE.BoxGeometry(s.x*.07,s.y*.11,s.z*.025);m=new THREE.Mesh(g,seam);m.position.set(c.x,sy*s.y*.30,b.min.z-s.z*.015);m.name='BFT250 underside drain boss';group.add(m);}
- group.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true;}});model.add(group);
-}
 export function enhanceEngineFinish(model,{horsepower=250,compact=false,shared250=false,dk1=false}={}){
- if(model.userData.engineFinishVersion===81)return;
+ if(model.userData.engineFinishVersion===78)return;
  const source=o=>o.userData.sourceName||o.name,paintGrain=microfinish('paint'),rubberGrain=microfinish('rubber'),steelGrain=microfinish('metal');
  const paint=new THREE.MeshPhysicalMaterial({name:'Tohatsu | glossy near-black factory clearcoat',color:'#090e16',metalness:.04,roughness:.145,clearcoat:1,clearcoatRoughness:.085,roughnessMap:paintGrain,envMapIntensity:.95});
  const rubber=new THREE.MeshPhysicalMaterial({name:'BFT250 | molded rubber',color:'#101516',metalness:0,roughness:.79,bumpMap:rubberGrain,bumpScale:.00015,roughnessMap:rubberGrain});
@@ -106,6 +83,5 @@ export function enhanceEngineFinish(model,{horsepower=250,compact=false,shared25
  decal('Tohatsu | aft factory name',brand,[-4.815,1.635,0],[0,-Math.PI/2,0],[.285,.067,.19]);
  decal('Tohatsu | aft factory '+horsepower,hp,[-4.815,1.490,0],[0,-Math.PI/2,0],[.290,.173,.23]);
  }
- if(dk1&&horsepower===250&&cowling)addBft250ShellDetails(model,cowling);
- model.userData.engineFinishVersion=81;model.updateMatrixWorld(true);
+ model.userData.engineFinishVersion=78;model.updateMatrixWorld(true);
 }
