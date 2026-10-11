@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
-import {enhanceEngineFinish} from './Engine_Finish.js?v=68';
+import {enhanceEngineFinish} from './Engine_Finish.js?v=78.1';
 
 export const ENGINE_CHOICES=[
  {id:'mfs25',label:'Tohatsu MFS25D',size:'25 hp · three cylinder'},
@@ -8,10 +8,10 @@ export const ENGINE_CHOICES=[
  {id:'mfs115',label:'Tohatsu MFS115A',size:'115 hp · inline four'},
  {id:'mfs140',label:'Tohatsu MFS140A',size:'140 hp · inline four'},
  {id:'bft150',label:'Tohatsu BFT150D',size:'150 hp · inline four'},
- {id:'bft200',label:'Tohatsu BFT200A',size:'200 hp · V6'},
- {id:'bft225',label:'Tohatsu BFT225A',size:'225 hp · V6'},
- {id:'bft250',label:'Tohatsu BFT250A',size:'250 hp · V6'}
-].map(c=>({...c,thumb:`Motor_Refinement/Thumbnail_${c.id}.png?v=56`}));
+ {id:'bft200',label:'Tohatsu BFT200A',size:'200 hp · DK1-style cover'},
+ {id:'bft225',label:'Tohatsu BFT225A',size:'225 hp · DK1-style cover'},
+ {id:'bft250',label:'Tohatsu BFT250DK1',size:'250 hp · V6'}
+].map(c=>({...c,thumb:`Motor_Refinement/Thumbnail_${c.id}.png?v=78.1`}));
 export function engineChoicesForBoat(choice){return ENGINE_CHOICES.filter(c=>{const hp=Number(c.id.replace(/\D/g,''));return choice.hp!==0&&hp>=(choice.minHp??115)&&hp<=(choice.hp??250);});}
 export const TROLLING_CHOICES=[
  {id:'minn-kota',label:'Minn Kota Riptide Ulterra',size:'Saltwater · auto deploy'},
@@ -31,13 +31,13 @@ export function createEngineOptions({root,onChange=()=>{},placements=null,allowe
   selected=id;root.userData.engineModel=id;root.updateWorldMatrix(true,true);onChange(id);return true;
  }};
  controller.ready=Promise.all(ENGINE_CHOICES.filter(c=>allowed.includes(c.id)).map(async c=>{
-  const g=await loader.loadAsync(`Motor_Refinement/Tohatsu_${c.id}.glb?v=70`),mount=new THREE.Group();
+  const g=await loader.loadAsync(`Motor_Refinement/Tohatsu_${c.id}.glb?v=78.1`),mount=new THREE.Group();
   root.updateWorldMatrix(true,false);let sceneRoot=root;while(sceneRoot.parent&&!sceneRoot.parent.isScene)sceneRoot=sceneRoot.parent;
   mount.matrix.copy(root.matrixWorld).invert().multiply(sceneRoot.matrixWorld);mount.matrixAutoUpdate=false;mount.name=`Installed Tohatsu | ${c.id}`;mount.visible=false;
   g.scene.traverse(o=>{
    const index=g.parser.associations.get(o)?.nodes;if(index!==undefined)o.userData.sourceName=g.parser.json.nodes[index].name;
    o.userData.part='engine';o.userData.engineModel=c.id;if(!o.isMesh)return;
-   if((o.userData.sourceName||o.name).includes('Tiller'))o.visible=tiller;
+   if((o.userData.sourceName||o.name).includes('Tiller'))o.visible=tiller||['mfs25','mfs60','mfs115'].includes(c.id);
    o.castShadow=true;o.receiveShadow=true;
    for(const m of Array.isArray(o.material)?o.material:[o.material]){
     if(m.name.startsWith('V49 | Tohatsu')){m.color.set('#202337');m.metalness=.06;m.roughness=.235;m.clearcoat=1;m.clearcoatRoughness=.16;m.envMapIntensity=.8;}
@@ -46,7 +46,7 @@ export function createEngineOptions({root,onChange=()=>{},placements=null,allowe
     else if(/rubber|gasket|recess/i.test(m.name)){m.metalness=0;m.roughness=.78;}
    }
   });
-  enhanceEngineFinish(g.scene,{horsepower:Number(c.id.replace(/\D/g,'')),compact:true});
+  enhanceEngineFinish(g.scene,{horsepower:Number(c.id.replace(/\D/g,'')),compact:true,shared250:true,dk1:[200,225,250].includes(Number(c.id.replace(/\D/g,'')))});
   if(placements){
    mount.matrix.identity();
    for(const position of placements){const installation=new THREE.Group();installation.position.copy(position).sub(new THREE.Vector3(-3.8989,1.32,0));installation.add(g.scene.clone(true));mount.add(installation);}

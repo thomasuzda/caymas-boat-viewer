@@ -1,10 +1,10 @@
 import {createGarminOptions,GARMIN_CHOICES} from './Garmin_Options.js?v=55.1';
 import {createFleetBoat,BOAT_CHOICES} from './Boat_Fleet.js?v=70';
 import {enhanceConsoleFinish} from './Console_Finish.js?v=51';
-import {enhanceEngineFinish} from './Engine_Finish.js?v=68';
+import {enhanceEngineFinish} from './Engine_Finish.js?v=78';
 import {createTrollingMotor} from './Boat_Trolling_Motor.js?v=54.3';
 import {createPowerPoles} from './Boat_Power_Poles.js?v=25';
-import {createEngineOptions,createTrollingOptions,ENGINE_CHOICES,TROLLING_CHOICES,engineChoicesForBoat} from './Motor_Options.js?v=70';
+import {createEngineOptions,createTrollingOptions,ENGINE_CHOICES,TROLLING_CHOICES,engineChoicesForBoat} from './Motor_Options.js?v=78.1';
 import * as THREE from 'three';
 import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
@@ -81,12 +81,12 @@ function beginBoatOrbit(){
   for(const id of ['engine','garmin','trolling'])$('#'+id).setAttribute('aria-pressed','false');
   $('#whole').setAttribute('aria-pressed','true');
 }
-function fitBoat(animate=true){
+function fitBoat(animate=true,sideShot=false){
   if(!model)return;focusOrbit=false;closeOptions(false);for(const id of ['engine','garmin','trolling'])$('#'+id).setAttribute('aria-pressed','false');view={kind:'boat'};$('#whole').setAttribute('aria-pressed','true');
   const center=boatBounds.getCenter(new THREE.Vector3());
-  const dir=(camera.aspect<.82?new THREE.Vector3(1,1.4,.05):new THREE.Vector3(1,.72,1.1)).normalize();
+  const dir=(sideShot?new THREE.Vector3(.80,.60,1.35):(camera.aspect<.82?new THREE.Vector3(1,1.4,.05):new THREE.Vector3(1,.72,1.1))).normalize();
   moveTo(center,center.clone().addScaledVector(dir,fittedDistance(boatBounds,center,dir)),animate);
-  announce('Whole boat fitted to your screen.');
+  announce(sideShot?'Whole boat fitted in an elevated bow-quarter view.':'Whole boat fitted to your screen.');
 }
 function lookCloser(){
   if(!selected)return;
@@ -171,7 +171,7 @@ function renderCards(){
   $('#options-left').hidden=$('#options-right').hidden=!arrows;
   $('#options-left').setAttribute('aria-label',`Scroll ${equipment} options left`);$('#options-right').setAttribute('aria-label',`Scroll ${equipment} options right`);
   $('#options-left').title=`Previous ${equipment} options`;$('#options-right').title=`Next ${equipment} options`;
-  const available=selected==='engine'?engineChoicesForBoat(activeBoat).sort((a,b)=>Number(b.id.replace(/\D/g,''))-Number(a.id.replace(/\D/g,''))):choices[selected];
+  const available=selected==='engine'?engineChoicesForBoat(activeBoat).sort((a,b)=>Number(b.id.replace(/\D/g,''))-Number(a.id.replace(/\D/g,''))):selected==='garmin'?[...choices[selected]].reverse().filter(item=>garminOptions?.fits(item.id)):choices[selected];
   if(!available.length){const message=document.createElement('p');message.className='empty-options';message.textContent='Twin inboard pod drives. The engines are enclosed inside the yacht; this first yacht layout has a fixed propulsion setup.';list.appendChild(message);}
   for(const item of available){
     const ready=selected==='garmin'?garminOptions?.readyState:selected==='engine'?engineOptions?.readyState:trollingOptions?.readyState;
@@ -324,13 +324,13 @@ canvas.addEventListener('lostpointercapture',e=>{if(tap.pointers.has(e.pointerId
 canvas.addEventListener('wheel',()=>{tap.block();freeView();},{capture:true,passive:true});
 window.addEventListener('blur',()=>{tap.reset();canvas.style.cursor='grab';});
 controls.addEventListener('start',()=>{transition=null;});controls.addEventListener('change',()=>{dirty=true;});
-$('#engine').onclick=()=>focusPart('engine');$('#garmin').onclick=()=>focusPart('garmin');$('#trolling').onclick=()=>focusPart('trolling');$('#whole').onclick=()=>fitBoat();$('#close').onclick=()=>closeOptions();$('#closer').onclick=lookCloser;
+$('#engine').onclick=()=>focusPart('engine');$('#garmin').onclick=()=>focusPart('garmin');$('#trolling').onclick=()=>focusPart('trolling');$('#whole').onclick=()=>fitBoat(true,true);$('#close').onclick=()=>closeOptions();$('#closer').onclick=lookCloser;
 $('#zoom-in').onclick=()=>zoom(.8);$('#zoom-out').onclick=()=>zoom(1.25);
 window.addEventListener('keydown',e=>{if(e.key==='Escape'&&selected){closeOptions();e.preventDefault();}});
 canvas.addEventListener('keydown',e=>{
   if(e.key.toLowerCase()==='t'){if(e.repeat)return;toggleTrollingMotor();e.preventDefault();}
   else if(e.key.toLowerCase()==='p'||e.key.toLowerCase()==='s'){if(e.repeat)return;togglePole(e.key.toLowerCase()==='p'?'port':'starboard');e.preventDefault();}
-  else if(e.key.toLowerCase()==='f'){fitBoat();e.preventDefault();}
+  else if(e.key.toLowerCase()==='f'){fitBoat(true,true);e.preventDefault();}
   else if(e.key==='+'||e.key==='='){zoom(.8);e.preventDefault();}
   else if(e.key==='-'){zoom(1.25);e.preventDefault();}
   else if(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(e.key)){
@@ -368,7 +368,7 @@ new GLTFLoader().load('Caymas_26HB_Tohatsu_Garmin.glb?v=64',g=>{
   garminOptions=createGarminOptions({root:current.garmin,source,anisotropy:Math.min(mobileRendering?4:16,renderer.capabilities.getMaxAnisotropy()),onChange:id=>{if(model!==g.scene)return;state.garmin=id;host.dataset.garmin=id;host.dataset.garminDisplayCount='2';renderer.shadowMap.needsUpdate=true;dirty=true;}});
   garminOptions.ready.then(()=>{if(selected==='garmin'){renderCards();$('#choice-note').textContent='Choose a Garmin to switch both displays.';}updateBoatBounds();dirty=true;}).catch(error=>{host.dataset.garminError='true';console.error('Garmin display options could not load.',error);if(selected==='garmin')$('#choice-note').textContent='The display options could not load. Refresh to try again.';});
   engineOptions=createEngineOptions({root:current.engine,allowed:engineChoicesForBoat(BOAT_CHOICES[0]).map(c=>c.id),onChange:id=>{if(model!==g.scene)return;state.engine=id;host.dataset.engine=id;renderer.shadowMap.needsUpdate=true;dirty=true;}});
-  engineOptions.ready.then(()=>{if(selected==='engine'){engineRunning=true;spinEnginePropeller();renderCards();$('#choice-note').textContent='Choose a covered Tohatsu horsepower option.';}updateBoatBounds();dirty=true;}).catch(error=>{console.error('Tohatsu options could not load.',error);host.dataset.engineError='true';if(selected==='engine')$('#choice-note').textContent='The engine options could not load. Refresh to try again.';});
+  engineOptions.ready.then(()=>{const previewEngine=new URLSearchParams(location.search).get('review-engine');if(['mfs25','mfs60','mfs115','mfs140','bft150','bft200','bft225','bft250'].includes(previewEngine)){engineOptions.select(previewEngine);openPart('engine',true);}if(selected==='engine'){engineRunning=true;spinEnginePropeller();renderCards();$('#choice-note').textContent='Choose a covered Tohatsu horsepower option.';}updateBoatBounds();dirty=true;}).catch(error=>{console.error('Tohatsu options could not load.',error);host.dataset.engineError='true';if(selected==='engine')$('#choice-note').textContent='The engine options could not load. Refresh to try again.';});
   host.dataset.engine='bft250';
   powerPoles=createPowerPoles(model,source,(side,target,moving)=>{
     const label=side==='port'?'Port':'Starboard';
